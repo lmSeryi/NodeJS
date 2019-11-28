@@ -1,53 +1,49 @@
-const db = require('mongoose')
-const Model = require('./model')
+const Model = require('./model');
 
-db.Promise = global.Promise
-db.connect('mongodb+srv://Seryi:ws1rv7TKiiUiAYun@platzi-ouadv.mongodb.net', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-
-console.log('[db] conectada con exito')
-
-function addMessage(message){
-    const myMessage = new Model(message)
-    myMessage.save()
-}   
-
-async function getMessage(filterUser){
-    let filter = {}
-    
-    if(filterUser!==null){
-        filter = { user: filterUser}
-    }
-    const messages = await Model.find(filter)
-    
-    return messages
+function addMessage(message) {
+    const myMessage = new Model(message);
+    myMessage.save();
 }
 
-async function updateText(id, message){
+async function getMessages(filterChat) {
+    return new Promise((resolve, reject) => {
+        let filter = {};
+        if (filterChat !== null) {
+            filter = { chat: filterChat };
+        }
+        Model.find(filter)
+            .populate('user')
+            .exec((error, populated) => {
+                if (error) {
+                    reject(error);
+                    return false;
+                }
+
+                resolve(populated);
+            });
+    })
+}
+
+function removeMessage(id) {
+    return Model.deleteOne({
+        _id: id
+    });
+}
+
+async function updateText(id, message) {
     const foundMessage = await Model.findOne({
         _id: id
-    })
+    });
 
-    foundMessage.message = message
-    const newMessage = await foundMessage.save()
-    return newMessage
+    foundMessage.message = message;
+
+    const newMessage = await foundMessage.save();
+    return newMessage;
 }
-
-function removeMessage(id){
-    return Model.deleteOne({
-        _id:id
-    })
-}
-
 
 module.exports = {
     add: addMessage,
-    list: getMessage,
+    list: getMessages,
     updateText: updateText,
-    remove: removeMessage
-    //get
-    //update
-    //delete
+    remove: removeMessage,
 }
