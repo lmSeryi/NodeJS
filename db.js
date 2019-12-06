@@ -1,7 +1,6 @@
 const db = require('mongoose')
 
 db.Promise = global.Promise
-//mongodb+srv://Seryi:ws1rv7TKiiUiAYun@platzi-ouadv.mongodb.net
 async function connect(url){
     await db.connect(url, {
         useNewUrlParser: true,
